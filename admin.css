@@ -1,0 +1,29 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    line-height: 1.5;
+    color: #1a202c;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.site-header { background: #fff; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 40; grid-column: 1 / -1; }
+.header-inner { max-width: 1180px; margin: 0 auto; display: flex; gap: 16px; align-items: center; padding: 14px; }
+.logo { font-size: 20px; font-weight: 800; color: #222; }
+.logo .accent { color: #ff6600; }
+.main-nav { display:flex; gap: 12px; margin-left: 20px; }
+.nav-toggle { display:none; background:transparent; border:none; font-size:20px; margin-left:6px; cursor:pointer; }
+.main-nav a { text-decoration:none; color:#333; padding:6px 8px; border-radius:6px; }
+.main-nav a:hover { background:#f6f6f6; }
+.header-actions { margin-left:auto; display:flex; gap:10px; align-items:center; position:relative; }
+.header-actions input { padding:8px 10px; border-radius:6px; border:1px solid #ddd; flex: 0 1 320px; max-width: 420px; min-width: 80px; }
+.icon-btn { background:#fff; border:1px solid #eee; padding:8px 10px; border-radius:6px; cursor:pointer; }

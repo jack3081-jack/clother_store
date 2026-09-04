@@ -1,0 +1,17 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow public reads for product images
+    match /products/{allPaths=**} {
+      allow read: if true;
+      // Only admins can upload or delete product images
+      allow write: if request.auth != null && (request.auth.token.admin == true || exists(/databases/$(default)/documents/admins/$(request.auth.uid)));
+    }
+
+    // By default, deny all other writes
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Contact — HAWA DENNIS SHOP</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="contact.css">
+  <style>
+    /* small page-specific layout */
+    .contact-page { max-width:780px; margin:28px auto; background:#fff; padding:18px; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,0.06); }
+    .contact-h { display:flex; gap:16px; align-items:center; }
+    .contact-h .brand { font-weight:800; font-size:20px; }
+    .contact-row { displ
+      ay:flex; gap:12px; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f3f3f3; }
+    .contact-row:last-child { border-bottom: none; }
+    .contact-number { font-weight:700; font-size:16px; color:#111; }
+    .contact-actions { display:flex; gap:8px; align-items:center; }
+    .phone-action { background:#ff6600; color:white; padding:8px 10px; border-radius:8px; text-decoration:none; font-weight:700; }
+    .whatsapp-action { background:#25D366; color:white; padding:8px 10px; border-radius:8px; text-decoration:none; font-weight:700; }
+    .help-note { color:#666; margin-top:10px; font-size:13px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">HAWA <span class="accent">DENNIS</span></div>
+      <nav class="main-nav" aria-label="Main navigation"><a href="index.html">Home</a></nav>
+      <div class="header-actions"><input type="text" id="search-bar" placeholder="Search" onkeyup="searchProducts()"></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="contact-page">
+      <div class="contact-h"><div class="brand">Contact HAWA DENNIS</div><div class="muted">We're available to assist</div></div>
+
+      <div style="margin-top:14px">
+        <div class="contact-row">
+          <div>
+            <div style="color:#666;font-size:13px">Phone</div>
+            <div class="contact-number">0768770090</div>
+          </div>
+          <div class="contact-actions">
+            <a class="phone-action" href="tel:+254768770090">Call</a>
+            <button class="contact-action" onclick="copyContact('phone', this)">Copy</button>
+          </div>
+        </div>
+
+       5 <div class="contact-row">
+          <div>
+            <div style="color:#666;font-size:13px">WhatsApp</div>
+            <div class="contact-number">0768770090</div>
+          </div>
+          <div class="contact-actions">
+            <a class="whatsapp-action" href="#" onclick="contactWhatsAppGeneral(); return false;">Open WhatsApp</a>
+            <button class="contact-action" onclick="copyContact('whatsapp', this)">Copy</button>
+          </div>
+        </div>
+
+        <div class="help-note">You can also use the header mini-cart or product pages to message us about specific items — we'll reply as soon as possible.</div>
+      </div>
+    </div>
+  </main>
+
+<div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
+  <script type="module" src="firebase-auth.js"></script>
+  <script type="module" src="firebase-db.js"></script>
+  <script src="script.js"></script>
+  <script type="module" src="firebase-auth.js"></script>
+</body>
+</html>

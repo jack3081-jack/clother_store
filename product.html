@@ -1,0 +1,236 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Product — HAWA DENNIS SHOP</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="product.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+</head>
+<body>
+
+  <!-- header (kept simple) -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">HAWA <span class="accent">DENNIS</span></div>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="#categories">Categories</a>
+        <a class="contact-link" href="contact.html" target="_blank" rel="noopener noreferrer">Contact</a>
+        <div id="contact-popover" class="contact-popover" aria-hidden="true">
+          <div class="popover-head">
+            <div class="popover-brand">HAWA <span class="accent">DENNIS</span></div>
+            <div class="popover-sub">Contact us — quick support</div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-left"><span class="icon">📞</span><div class="contact-label">Call</div></div>
+            <div class="contact-right">
+              <a class="contact-number" href="tel:+254768770090">0768770090</a>
+              <button onclick="copyContact('phone', this)" aria-label="Copy phone">Copy</button>
+              <a class="contact-action" href="tel:+254768770090">Call</a>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="contact-item">
+            <div class="contact-left"><span class="icon">🟢</span><div class="contact-label">WhatsApp</div></div>
+            <div class="contact-right">
+              <a class="contact-number" href="#" onclick="contactWhatsAppGeneral(); return false;">0768770090</a>
+              <button onclick="copyContact('whatsapp', this)" aria-label="Copy whatsapp">Copy</button>
+              <a class="contact-action whatsapp-action" href="#" onclick="contactWhatsAppGeneral(); return false;">Open</a>
+            </div>
+          </div>
+          <div class="popover-foot">Available 9:00 — 18:00 Mon–Sat</div>
+        </div>
+      </nav>
+        <div class="header-actions">
+        <input type="text" id="search-bar" placeholder="Search products" onkeyup="searchProducts()" />
+        <div class="icon-btn" onclick="window.location.href='index.html'">Back</div>
+          <a class="whatsapp-link" href="#" onclick="contactWhatsAppAuto(); return false;">WhatsApp: 0768770090</a>
+        <div id="cart-toggle" class="icon-btn cart-icon" onclick="toggleMiniCart()" aria-expanded="false" aria-controls="mini-cart">Cart: <span id="cart-count">0</span></div>
+        <div id="mini-cart" class="mini-cart" aria-hidden="true">
+          <h4>Shopping Cart</h4>
+          <div id="cart-list"></div>
+          <div class="cart-footer">
+            <div class="cart-total">Total: Ksh <span id="cart-total">0</span></div>
+            <div class="cart-actions">
+              <button id="clear-cart" onclick="clearCart()">Clear</button>
+              <button id="checkout" onclick="checkout()">Checkout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:1180px;margin:18px auto;padding:12px;">
+    <div id="product-detail" class="product-detail">
+      <!-- JS will populate this -->
+    </div>
+
+    <section id="related" style="margin-top:22px;">
+      <h3>Related items</h3>
+      <div id="related-list" class="product-grid"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" aria-live="polite" aria-atomic="true"></div>
+
+<script src="script.js"></script>
+  <script type="module" src="firebase-auth.js"></script>
+  <script>
+    // product page script — read id from query
+    function getQueryParam(name) {
+      const search = new URLSearchParams(window.location.search);
+      return search.get(name);
+    }
+
+    function renderProductPage() {
+      const rawId = getQueryParam('id');
+      const id = rawId ? rawId : null; // support string Firestore doc IDs
+      renderProductById(id, false);
+    }
+
+    // Render a product inside the page given an ID.
+    // If pushHistory=true, update the browser URL using pushState.
+    function renderProductById(id, pushHistory = true) {
+      const elContainer = document.getElementById('product-detail');
+      if (!id) { elContainer.innerHTML = '<p>Product not found.</p>'; return; }
+
+      const p = products.find(x => String(x.id) === String(id));
+      if (!p) {
+        document.getElementById('product-detail').innerHTML = '<p>Product not found.</p>';
+        return;
+      }
+
+      const el = elContainer;
+      // compute a deterministic rating to show
+      const rating = 3 + (Number(p.id) % 3 || 0);
+      const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+      // small image gallery (repeat primary image if we don't have many)
+      const gallery = [p.image, p.image, p.image].filter(Boolean);
+
+      el.innerHTML = `
+        <nav class="breadcrumb"><a href="index.html">Home</a> › <a href="#">${p.category}</a> › <span>${p.name}</span></nav>
+
+        <div class="product-top">
+          <div class="product-gallery">
+            <div class="main-image">
+              <img id="main-img" src="${gallery[0]}" alt="${p.name}">
+            </div>
+            <div class="thumbs">
+              ${gallery.map((g, i) => `<button class="thumb" data-src="${g}" onclick="setProductMainImage('${g}')"><img src="${g}" alt="thumb-${i}"></button>`).join('')}
+            </div>
+          </div>
+
+          <div class="product-info">
+            <h1 class="prod-title">${p.name}</h1>
+            <div class="prod-meta">
+              <div class="prod-rating">${stars} <span class="reviews">(${10 + (Number(p.id) % 70 || 0)} reviews)</span></div>
+              <div class="prod-sku muted">SKU: ${String(p.id).padStart ? String(p.id).padStart(5, '0') : String(p.id)}</div>
+            </div>
+
+            <div class="prod-price">${p.price ? 'Ksh <span class="price-num">' + p.price + '</span>' : 'Ask owner for price'}</div>
+
+            <div class="prod-badges">
+              <span class="badge in-stock">In stock</span>
+              <span class="badge-fast">Fast delivery</span>
+            </div>
+            <div class="stock-info-page">Available: <span id="page-stock">${typeof getAvailableStock === 'function' ? getAvailableStock(p.id) : ''}</span></div>
+
+            <div class="prod-desc">${p.description || 'A quality product from Hawa Dennis — crafted with care and excellent value for money.'}</div>
+
+            <div class="prod-actions">
+              <div class="qty-box">
+                <label for="prod-qty">Quantity</label>
+                <div class="qty-controls"><button onclick="modQty(-1, 'prod-qty')">-</button><input id="prod-qty" type="number" min="1" value="1"><button onclick="modQty(1, 'prod-qty')">+</button></div>
+              </div>
+              <div class="cta-row">
+                <button class="add-btn" onclick="addMultipleToCart('${p.id}', parseInt(document.getElementById('prod-qty').value || '1',10))">Add to cart</button>
+                <button class="view-btn" onclick="toggleMiniCart();">Open cart</button>
+              </div>
+            </div>
+
+            <div class="share-row">
+              <span class="muted">Share:</span>
+              <button class="view-btn" onclick="navigator.clipboard?.writeText(location.href).then(()=>showToast('Link copied'))">Copy link</button>
+              <button class="view-btn" onclick="showToast('Share to Facebook (demo)')">Facebook</button>
+              <button class="whatsapp-btn" onclick="contactWhatsAppForProduct('${p.id}')">Message on WhatsApp</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-tabs">
+          <h3>Details</h3>
+          <p>${p.longDescription || 'Full product details: comfortable fit, easy care, and available in multiple colors.'}</p>
+        </div>
+      `;
+
+      // update history and title
+      if (pushHistory) {
+        history.pushState({ id }, p.name, `product.html?id=${id}`);
+      } else {
+        // ensure initial page load is represented in history state
+        history.replaceState({ id }, p.name, `product.html?id=${id}`);
+      }
+      document.title = p.name + ' — HAWA DENNIS SHOP';
+
+      // update page stock display and add-button state
+      try {
+        const pageStockEl = document.getElementById('page-stock');
+        if (pageStockEl && typeof getAvailableStock === 'function') pageStockEl.textContent = getAvailableStock(p.id);
+        const addBtn = document.querySelector('#product-detail .add-btn');
+        if (addBtn) addBtn.disabled = getAvailableStock(p.id) <= 0;
+      } catch (e) {}
+
+      // related items
+      const related = products.filter(x => x.category === p.category && x.id !== p.id).slice(0, 8);
+      const rlist = document.getElementById('related-list');
+      rlist.innerHTML = '';
+      if (!related.length) {
+        rlist.innerHTML = '<div class="no-results">No related items.</div>';
+      } else {
+          related.forEach(r => {
+          const avail = (typeof getAvailableStock === 'function') ? getAvailableStock(r.id) : r.stock || 0;
+          const stockCls = avail <= 0 ? 'out' : (avail <= 5 ? 'low' : '');
+          const stockText = avail <= 0 ? 'Out of stock' : `${avail} remaining`;
+          const div = document.createElement('div');
+          div.className = 'product-card';
+          // make the whole card open the product when clicked or activated with keyboard
+          div.setAttribute('role', 'button');
+          div.setAttribute('tabindex', '0');
+          div.setAttribute('title', `Open ${r.name}`);
+          div.onclick = () => openProductInPlace(r.id);
+          div.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') openProductInPlace(r.id); };
+          div.innerHTML = `
+            <img src="${r.image}" alt="${r.name}">
+            <div class="product-name">${r.name}</div>
+            <div class="product-meta"><div class="product-price">${r.price ? 'Ksh ' + r.price : 'Ask owner for price'}</div><div class="product-rating">★ ★ ★ ☆ ☆</div></div>
+            <div class="stock-info ${stockCls}">${stockText}</div>
+            <div class="product-actions">
+                    <button class="view-btn" onclick="(event.stopPropagation(), openProductInPlace('${r.id}'))">Open</button>
+                  <button class="add-btn" ${avail<=0?'disabled':''} onclick="(event.stopPropagation(), addToCart('${r.id}'), showToast('Added ${r.name}'))">Add</button>
+                    <button class="whatsapp-btn" onclick="(event.stopPropagation(), contactWhatsAppForProduct('${r.id}'))">WhatsApp</button>
+            </div>
+          `;
+          rlist.appendChild(div);
+        });
+      }
+    }
+
+    // open the product in-place (used by related items)
+    function openProductInPlace(id) {
+      if (!id) return;
+      renderProductById(id, true);
+    }
+
+    // handle back/forward navigation — when user presses Back, load the id from URL
+    window.addEventListener('popstate', (ev) => {
+      const id = ev.state && ev.state.id ? ev.state.id : parseInt(getQueryParam('id') || 0, 10);
+      if (id) renderProductById(id, false);
+    });
+
+    // render on page ready
+    document.addEventListener('DOMContentLoaded', renderProductPage);
+  </script>
+</body>
+</html>

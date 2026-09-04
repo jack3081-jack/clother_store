@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>User Account — HAWA DENNIS</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="users-auth.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 16px; }
+    .auth-container { width: 100%; max-width: 1000px; }
+    .auth-header { text-align: center; margin-bottom: 36px; color: #fff; }
+    .auth-header h1 { font-size: 32px; margin-bottom: 8px; font-weight: 700; }
+    .auth-header p { font-size: 16px; opacity: 0.9; }
+    .auth-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 768px) { .auth-wrap { grid-template-columns: 1fr; gap: 16px; } }
+    .auth-card { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .auth-card h2 { font-size: 24px; margin-bottom: 8px; color: #222; font-weight: 700; }
+    .auth-card-sub { font-size: 13px; color: #666; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    input[type="email"],input[type="password"],input[type="text"] { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1.5px solid #ddd; font-size: 14px; transition: all 0.2s; }
+    input[type="email"]:focus,input[type="password"]:focus,input[type="text"]:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    .form-actions { display: flex; gap: 12px; margin-top: 20px; }
+    button { padding: 12px 24px; border-radius: 8px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    button[type="submit"] { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; flex: 1; }
+    button[type="submit"]:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4); }
+    button[type="submit"]:active { transform: translateY(0); }
+    .divider { text-align: center; margin: 24px 0; font-size: 13px; color: #999; }
+    .divider::before { content: ''; display: block; height: 1px; background: #eee; margin-bottom: 12px; }
+    .divider::after { content: ''; display: block; height: 1px; background: #eee; margin-top: 12px; }
+    #msg { margin: 16px 0; padding: 12px 14px; border-radius: 8px; font-size: 13px; min-height: 20px; }
+    #msg:empty { display: none; }
+    #msg.error { background: #fee; color: #c33; border: 1px solid #fcc; }
+    #msg.success { background: #efe; color: #3c3; border: 1px solid #cfc; }
+    .auth-benefit { font-size: 13px; color: #666; line-height: 1.6; margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee; }
+    .auth-benefit strong { color: #333; }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-header">
+      <h1>HAWA <span style="color: #ffc107;">DENNIS</span></h1>
+      <p>Your account, your orders, your style</p>
+    </div>
+
+    <div id="msg"></div>
+
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <h2>Welcome back</h2>
+        <p class="auth-card-sub">Sign in to your account</p>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="u-email">Email address</label>
+            <input id="u-email" type="email" required placeholder="you@email.com" />
+          </div>
+          <div class="form-group">
+            <label for="u-password">Password</label>
+            <input id="u-password" type="password" required placeholder="••••••••" />
+          </div>
+          <div style="text-align: right; margin-top: 8px;">
+            <a href="forgot-password.html" style="font-size: 12px; color: #667eea; text-decoration: none;">Forgot password?</a>
+          </div>
+          <div class="form-actions">
+            <button id="sign-in" type="submit">Sign in</button>
+          </div>
+          <div class="auth-benefit"><strong>✓ Quick checkout</strong> — Save your address and payment info</div>
+        </form>
+      </div>
+
+      <div class="auth-card">
+        <h2>New here?</h2>
+        <p class="auth-card-sub">Create a new account</p>
+<form id="register-form">
+          <div class="form-group">
+            <label for="r-name">Full name</label>
+            <input id="r-name" type="text" placeholder="John Doe" />
+          </div>
+          <div class="form-group">
+            <label for="r-email">Email address</label>
+            <input id="r-email" type="email" required placeholder="you@email.com" />
+          </div>
+          <div class="form-group">
+            <label for="r-password">Password</label>
+            <input id="r-password" type="password" required placeholder="••••••••" />
+          </div>
+          <div class="form-group">
+            <label for="r-confirm">Confirm password</label>
+            <input id="r-confirm" type="password" required placeholder="••••••••" />
+          </div>
+          <div class="form-actions">
+            <button id="create-account" type="submit">Create account</button>
+          </div>
+          <div class="auth-benefit"><strong>✓ Easy orders</strong> — Place orders in seconds, anytime</div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Verification code screen (hidden until a code is requested) -->
+    <div id="verify-screen" class="auth-card" style="display:none; margin-top:24px;">
+      <h2>Verify your email</h2>
+      <p class="auth-card-sub">Enter the 6-digit code we emailed you</p>
+      <div class="form-group">
+        <label for="v-code">6-digit code</label>
+        <input id="v-code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="123456" />
+      </div>
+      <div class="form-actions">
+        <button id="verify-code-btn" type="button">Verify</button>
+      </div>
+      <div style="margin-top:14px; text-align:center;">
+        <button id="resend-code-btn" type="button" style="background:#667eea; color:#fff;">Resend code</button>
+        <button id="resend-timer-btn" type="button" disabled style="display:none; background:#ccc; color:#333;">Wait 0s</button>
+      </div>
+      <p class="auth-card-sub" style="margin-top:12px;">Check your inbox and spam/junk folder. The code expires in 10 minutes.</p>
+    </div>
+  </div>
+
+<script type="module" src="firebase-auth.js"></script>
+<script type="module" src="firebase-db.js"></script>
+<script src="script.js"></script>
+  <script type="module">
+    import { firebaseAuth } from './firebase-auth.js';
+
+    (function(){
+      const msg = document.getElementById('msg');
+      const qs = new URLSearchParams(location.search);
+      const next = qs.get('next') || 'index.html';
+
+      function show(m, type = 'error'){
+        if(msg) {
+          msg.textContent = m;
+          msg.className = type;
+        }
+      }
+
+// Already logged in AND verified? Redirect to the account page or next page.
+      // IMPORTANT: We must NOT redirect while a user is mid-registration. Right
+      // after account creation the user is signed in but NOT yet verified, so
+      // redirecting here would yank them away before the verification screen shows.
+      let isRegistering = false;
+      firebaseAuth.onAuthStateChanged((user) => {
+        if (user && user.emailVerified && !isRegistering) {
+          location.href = next;
+        }
+      });
+
+// Sign in
+      document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('u-email').value.trim();
+        const pw = document.getElementById('u-password').value;
+        try {
+          show('Signing in...', 'success');
+          const user = await firebaseAuth.login(email, pw);
+          if (!user.emailVerified) {
+            // Offer to send a new 6-digit code right from the login screen.
+            if (confirm('Your email is not verified yet. A 6-digit code was sent to your inbox/spam. Would you like us to send a new code?')) {
+              try {
+                await firebaseAuth.sendVerificationCode(email);
+                show('✓ A new 6-digit code has been sent to your email. Check your inbox/spam.', 'success');
+              } catch (err2) {
+                show('✗ Could not send a code: ' + ((err2 && err2.message) || 'Please try again later.'), 'error');
+              }
+            } else {
+              show('Please verify your email before continuing. Check your inbox/spam for the 6-digit code.', 'error');
+            }
+            return;
+          }
+          show('✓ Signed in! Redirecting...', 'success');
+          setTimeout(() => location.href = next, 1200);
+        } catch (err) {
+          show('✗ Sign in failed: ' + (err && err.message ? err.message : err), 'error');
+        }
+      });
+
+// --- Custom 6-digit verification code flow ---
+      const verifyScreen = document.getElementById('verify-screen');
+      const authWrap = document.querySelector('.auth-wrap');
+      const ERR_HELPERS = {
+        'auth/email-already-in-use': 'This email is already registered. Please sign in instead.',
+        'auth/invalid-email': 'Please enter a valid email address.',
+        'auth/weak-password': 'Password is too weak. Use at least 6 characters.',
+        'auth/operation-not-allowed': 'Email/password sign-in is not enabled. Enable it in the Firebase Console.',
+        'auth/network-request-failed': 'Network error. Check your connection and try again.'
+      };
+      function friendlyError(err) {
+        const code = err && err.code ? err.code : '';
+        return (ERR_HELPERS[code] || (err && err.message) || 'Something went wrong. Please try again.');
+      }
+
+      function showVerifyScreen(email) {
+        if (authWrap) authWrap.style.display = 'none';
+        if (verifyScreen) verifyScreen.style.display = 'block';
+        const codeBox = document.getElementById('v-code');
+        if (codeBox) codeBox.value = '';
+        startResendCooldown(); // 60s cooldown after the first send
+      }
+
+      // Resend cooldown (60s) to protect against repeated requests.
+      let resendTimer = null;
+      function startResendCooldown() {
+        const resendBtn = document.getElementById('resend-code-btn');
+        const timerBtn = document.getElementById('resend-timer-btn');
+        if (!resendBtn || !timerBtn) return;
+        let remaining = 60;
+        resendBtn.style.display = 'none';
+        timerBtn.style.display = 'inline-block';
+        timerBtn.disabled = true;
+        timerBtn.textContent = 'Resend in ' + remaining + 's';
+        clearInterval(resendTimer);
+        resendTimer = setInterval(() => {
+          remaining -= 1;
+          if (remaining <= 0) {
+            clearInterval(resendTimer);
+            timerBtn.style.display = 'none';
+            resendBtn.style.display = 'inline-block';
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Resend code';
+          } else {
+            timerBtn.textContent = 'Resend in ' + remaining + 's';
+          }
+        }, 1000);
+      }
+
+      // Ask the backend to send the 6-digit code (never see it here).
+      async function requestCode(email) {
+        await firebaseAuth.sendVerificationCode(email);
+      }
+
+      // Register
+      document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('r-name').value.trim();
+        const email = document.getElementById('r-email').value.trim();
+        const pw = document.getElementById('r-password').value;
+        const confirm = document.getElementById('r-confirm').value;
+
+        // --- Validation ---
+        if (!name) { show('Please enter your full name.', 'error'); return; }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { show('Please enter a valid email address.', 'error'); return; }
+        if (!pw || pw.length < 6) { show('Password must be at least 6 characters.', 'error'); return; }
+        if (pw !== confirm) { show('Passwords do not match.', 'error'); return; }
+
+try {
+          show('Creating account...', 'success');
+          // 1) Create the Firebase Auth account (password stays with Firebase only).
+          await firebaseAuth.register(email, pw, name);
+          isRegistering = true;
+
+          // 2) Always show the verification screen right after the account is
+          //    created, so the user sees the account-created message even if
+          //    the code-emailing backend is not deployed yet.
+          show('✓ Account created! Enter the 6-digit code we emailed you.', 'success');
+          showVerifyScreen(email);
+
+          // 3) Ask the backend to email the 6-digit code. If this fails (e.g.
+          //    the Cloud Functions are not deployed yet), show a warning but
+          //    DO NOT hide the fact that the account was created.
+          try {
+            await requestCode(email);
+            show('✓ Account created! We emailed you a 6-digit code. Check your inbox/spam.', 'success');
+          } catch (err2) {
+            show('✓ Account created, but we could not email the code yet: ' + friendlyError(err2), 'error');
+          }
+        } catch (err) {
+          show('✗ Create failed: ' + friendlyError(err), 'error');
+        }
+      });
+
+      // Verify the 6-digit code
+      document.getElementById('verify-code-btn').addEventListener('click', async () => {
+        const email = document.getElementById('r-email').value.trim();
+        const code = document.getElementById('v-code').value.trim();
+        if (!/^\d{6}$/.test(code)) { show('Please enter the 6-digit code.', 'error'); return; }
+        const btn = document.getElementById('verify-code-btn');
+        btn.disabled = true;
+        try {
+          show('Verifying...', 'success');
+          await firebaseAuth.verifyCode(email, code);
+          show('✓ Email verified! Redirecting...', 'success');
+          setTimeout(() => location.href = next, 1500);
+        } catch (err) {
+          btn.disabled = false;
+          show('✗ ' + friendlyError(err), 'error');
+        }
+      });
+
+      // Resend code (invalidates the previous code on the backend)
+      document.getElementById('resend-code-btn').addEventListener('click', async () => {
+        const email = document.getElementById('r-email').value.trim();
+        const btn = document.getElementById('resend-code-btn');
+        btn.disabled = true;
+        show('Resending code...', 'success');
+        try {
+          await firebaseAuth.resendVerificationCode(email);
+          show('✓ A new code has been sent to your email.', 'success');
+        } catch (err) {
+          btn.disabled = false;
+          show('✗ ' + friendlyError(err), 'error');
+        }
+        startResendCooldown();
+      });
+
+      // Allow Enter to submit the code
+      document.getElementById('v-code').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('verify-code-btn').click();
+      });
+    })();
+  </script>
+  <style>
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</body>
+</html>

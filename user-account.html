@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>User Account — HAWA DENNIS</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="users-auth.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 16px; }
+    .auth-container { width: 100%; max-width: 600px; }
+    .auth-header { text-align: center; margin-bottom: 36px; color: #fff; }
+    .auth-header h1 { font-size: 32px; margin-bottom: 8px; font-weight: 700; }
+    .auth-header p { font-size: 16px; opacity: 0.9; }
+    .auth-card { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; }
+    .auth-card h2 { font-size: 24px; margin-bottom: 8px; color: #222; font-weight: 700; }
+    .auth-card-sub { font-size: 13px; color: #666; margin-bottom: 24px; }
+    .account-info { margin: 20px 0; text-align: left; }
+    .account-info div { margin-bottom: 12px; }
+    .account-info label { font-weight: 600; color: #333; display: block; margin-bottom: 4px; }
+    .account-info span { color: #666; }
+    button { padding: 12px 24px; border-radius: 8px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin: 8px; }
+    .logout-btn { background: #dc3545; color: #fff; }
+    .logout-btn:hover { background: #c82333; }
+    .back-btn { background: #6c757d; color: #fff; }
+    .back-btn:hover { background: #5a6268; }
+    #msg { margin: 16px 0; padding: 12px 14px; border-radius: 8px; font-size: 13px; min-height: 20px; }
+    #msg:empty { display: none; }
+    #msg.error { background: #fee; color: #c33; border: 1px solid #fcc; }
+    #msg.success { background: #efe; color: #3c3; border: 1px solid #cfc; }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-header">
+      <h1>HAWA <span style="color: #ffc107;">DENNIS</span></h1>
+      <p>Your account, your orders, your style</p>
+    </div>
+
+    <div id="msg"></div>
+
+    <div class="auth-card">
+      <h2>Your Account</h2>
+      <p class="auth-card-sub">Manage your account settings</p>
+
+      <div class="account-info" id="account-info">
+        <!-- populated by script -->
+      </div>
+
+<button class="logout-btn" id="logout-btn">Logout</button>
+      <button class="logout-btn" id="delete-account-btn" style="background: #dc3545;">Delete Account</button>
+      <button class="logout-btn" id="resend-verify-btn" style="background: #667eea; display:none;">Resend verification code</button>
+      <button class="back-btn" onclick="window.location.href='index.html'">Back to Store</button>
+    </div>
+  </div>
+
+<script type="module" src="firebase-auth.js"></script>
+<script type="module" src="firebase-db.js"></script>
+<script src="script.js"></script>
+  <script type="module">
+    import { firebaseAuth } from './firebase-auth.js';
+
+    (function(){
+      const msg = document.getElementById('msg');
+      const info = document.getElementById('account-info');
+
+      function show(m, type = 'error'){
+        if(msg) {
+          msg.textContent = m;
+          msg.className = type;
+        }
+      }
+
+      // Check login state and load account info
+      firebaseAuth.onAuthStateChanged((user) => {
+        if (!user) {
+          show('Not logged in. Redirecting...', 'error');
+          setTimeout(() => window.location.href = 'user-auth.html', 2000);
+          return;
+        }
+
+info.innerHTML = `
+          <div><label>Email</label><span>${user.email || 'N/A'}</span></div>
+          <div><label>Name</label><span>${user.displayName || 'N/A'}</span></div>
+          <div><label>Account created</label><span>${user.metadata && user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'N/A'}</span></div>
+          <div><label>Email verified</label><span>${user.emailVerified ? '✓ Yes' : '✗ No'}</span></div>
+        `;
+
+        // Show a "Resend verification code" button when not yet verified.
+        const resendBtn = document.getElementById('resend-verify-btn');
+        if (resendBtn) {
+          resendBtn.style.display = user.emailVerified ? 'none' : 'inline-block';
+        }
+      });
+
+      // Resend the 6-digit verification code when the email isn't verified.
+      document.getElementById('resend-verify-btn').addEventListener('click', async () => {
+        const btn = document.getElementById('resend-verify-btn');
+        const user = firebaseAuth.currentUser();
+        if (!user || !user.email) { show('You must be signed in.', 'error'); return; }
+        btn.disabled = true;
+        try {
+          await firebaseAuth.sendVerificationCode(user.email);
+          show('✓ A new 6-digit code has been sent to your email. Check your inbox/spam.', 'success');
+        } catch (err) {
+          show('✗ ' + ((err && err.message) || 'Could not send the code right now.'), 'error');
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+// Logout button
+      document.getElementById('logout-btn').addEventListener('click', async () => {
+        try {
+          await firebaseAuth.logout();
+          show('Logged out successfully', 'success');
+          setTimeout(() => window.location.href = 'user-auth.html', 1200);
+        } catch (err) {
+          show('Logout failed: ' + (err && err.message ? err.message : err), 'error');
+        }
+      });
+
+      // Delete account button
+      document.getElementById('delete-account-btn').addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to permanently delete your account? This cannot be undone.')) return;
+        try {
+          await firebaseAuth.deleteAccount();
+          show('Account deleted successfully', 'success');
+          setTimeout(() => window.location.href = 'user-auth.html', 1500);
+        } catch (err) {
+          show('Delete failed: ' + (err && err.message ? err.message : err), 'error');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

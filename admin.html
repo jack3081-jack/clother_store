@@ -1,0 +1,591 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — HAWA DENNIS</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">HAWA <span class="accent">DENNIS</span> — Admin</div>
+      <div class="header-actions">
+        <a href="index.html" class="icon-btn">Open Store</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="admin-top">
+      <div>
+        <h1>Admin • HAWA <span class="accent">DENNIS</span></h1>
+        <p class="muted">Add and manage catalog items for your store. Changes persist locally for demo purposes.</p>
+      <div class="admin-contact-panel" style="margin:12px 0; display:flex; gap:10px; align-items:center;">
+        <label style="font-weight:700; margin-right:6px;">Contact phone</label>
+        <input id="admin-phone-input" type="text" placeholder="0768770090" style="padding:8px 10px; border-radius:6px; border:1px solid #ddd; width:160px;" />
+        <button id="save-phone" class="add-btn" type="button">Save</button>
+        <button id="delete-phone" class="view-btn" type="button">Delete</button>
+        <button id="open-whatsapp" class="whatsapp-btn" type="button">Open WhatsApp</button>
+        <a id="call-phone" class="phone-link" href="#">Call</a>
+      </div>
+
+      </div>
+      <div class="admin-stats" id="admin-stats">
+        <div class="stat">
+          <div class="stat-num" id="total-products">0</div>
+          <div class="stat-label">Products</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="total-stock">0</div>
+          <div class="stat-label">In stock</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="total-out">0</div>
+          <div class="stat-label">Out of stock</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- category pills up here so it's top-first for admin filtering -->
+    <div class="admin-category-top">
+      <div class="category-label">Categories</div>
+      <div class="category-add">
+        <input id="new-category-input" type="text" placeholder="Add new category" />
+        <button id="add-category-btn" class="add-btn">Add</button>
+      </div>
+      <div id="p-category-list-top" class="category-top-list"></div>
+    </div>
+
+    <section class="admin-panel">
+      <form id="admin-form" class="admin-form">
+        <h3 class="admin-form-title">Add new product</h3>
+        <label>Product name</label>
+        <input id="p-name" type="text" placeholder="Name" required />
+
+        <label>Price (Ksh)</label>
+        <input id="p-price" type="number" step="1" min="0" placeholder="e.g. 1500" />
+
+        <label>Image (URL or upload)</label>
+        <input id="p-image" type="text" placeholder="images/example.jpg or https://..." class="form-input" />
+        <input id="p-image-file" type="file" accept="image/*" class="form-file" />
+        <div id="image-preview" class="image-preview">
+          <div class="preview-label">Preview</div>
+          <div class="preview-container">
+            <img id="image-preview-img" src="" class="preview-img">
+          </div>
+        </div>
+
+        <label>Category</label>
+        <select id="p-category" class="form-input">
+          <option value="">Select category</option>
+        </select>
+
+        <label>Stock</label>
+        <input id="p-stock" type="number" step="1" min="0" placeholder="30" class="form-input" />
+
+        <div class="admin-actions">
+          <button id="add-product" class="add-btn" type="submit">Add product</button>
+          <button id="cancel-edit" class="view-btn" type="button">Cancel</button>
+          <button id="reset-store" class="icon-btn" type="button">Reset</button>
+        </div>
+      </form>
+
+      <!-- HERO editor — placed next to product form so admins can update the homepage hero -->
+      <aside class="admin-hero admin-hero-aside" aria-label="Hero editor">
+        <h3 class="hero-title">Homepage hero</h3>
+        <label class="hero-label">Title</label>
+        <input id="hero-title-input" type="text" placeholder="Hero headline" class="hero-input" />
+        <label class="hero-label">Subtitle</label>
+        <input id="hero-sub-input" type="text" placeholder="Short subtitle" class="hero-input" />
+        <label class="hero-label">Image (URL or upload)</label>
+        <input id="hero-image-input" type="text" placeholder="images/hero.jpg or https://..." class="hero-input" />
+        <input id="hero-image-file" type="file" accept="image/*" class="hero-file" />
+        <div id="hero-preview" class="hero-preview">
+          <div class="hero-preview-label">Preview</div>
+          <div class="hero-preview-container">
+            <img id="hero-preview-img" src="" class="hero-preview-img">
+          </div>
+        </div>
+        <div class="hero-buttons">
+          <button id="save-hero" class="add-btn" type="button">Save hero</button>
+          <button id="reset-hero" class="view-btn" type="button">Reset</button>
+        </div>
+      </aside>
+      <div class="admin-list-column">
+        <div class="admin-list-head">
+          <h3>Catalog</h3>
+          <input id="admin-search" placeholder="Search products..." class="admin-search" />
+        </div>
+        <div id="admin-products" class="admin-products"></div>
+      </div>
+    </section>
+    
+
+  </main>
+
+  <footer class="site-footer admin-footer">
+    <div class="footer-bottom">Admin view — local demo</div>
+  </footer>
+
+<script src="script.js"></script>
+  <script type="module" src="firebase-auth.js"></script>
+  <script type="module" src="firebase-db.js"></script>
+  <script>
+    // Client-side admin guard: redirect non-admins to login/home.
+    (function () {
+      async function guardAdmin() {
+        if (!window.firebaseAuth || !window.firebaseDB) return; // local demo fallback
+        window.firebaseAuth.onAuthStateChanged(async (user) => {
+          if (!user) {
+            const redirect = encodeURIComponent(location.pathname + location.search);
+            location.href = `user-auth.html?redirect=${redirect}`;
+            return;
+          }
+          // Prefer custom claim if present
+          try {
+            const idToken = await user.getIdTokenResult();
+            if (idToken && idToken.claims && idToken.claims.admin) return;
+          } catch (e) { /* ignore */ }
+          // Fallback: check /admins/{uid} document
+          try {
+            const ok = await window.firebaseDB.isAdmin(user.uid);
+            if (!ok) {
+              alert('Admin access required.');
+              location.href = 'index.html';
+            }
+          } catch (e) {
+            console.warn('Admin check failed', e);
+          }
+        });
+      }
+      if (window.firebaseAuth) guardAdmin(); else window.addEventListener('firebase:available', guardAdmin);
+    })();
+  </script>
+  <script>
+    // admin page glue
+    document.addEventListener('DOMContentLoaded', async () => {
+      const form = document.getElementById('admin-form');
+      const list = document.getElementById('admin-products');
+
+      // current admin category filter (null==all)
+      let adminFilterCategory = null;
+
+      // load categories from storage, or initialize from products
+      let categories = loadCategoriesFromStorage();
+      if (!categories || !categories.length) {
+        categories = Array.from(new Set(products.map(p => (p.category || '').trim()).filter(Boolean)));
+        saveCategoriesToStorage(categories);
+      }
+
+      function addCategory(newCat) {
+        if (!newCat || categories.includes(newCat)) return;
+        categories.push(newCat);
+        saveCategoriesToStorage(categories);
+        rebuildCategoryPills();
+      }
+
+      function removeCategory(cat) {
+        if (!confirm(`Remove category "${cat}"? This will set all products in this category to no category.`)) return;
+        categories = categories.filter(c => c !== cat);
+        saveCategoriesToStorage(categories);
+        // update products to remove category
+        products.forEach(p => { if (p.category === cat) p.category = ''; });
+        saveProductsToStorage(products);
+        if (adminFilterCategory === cat) adminFilterCategory = null;
+        rebuildCategoryPills();
+        renderAdminList();
+      }
+
+      function renderAdminList() {
+        list.innerHTML = '';
+        // build base list filtered by current category filter
+        let filtered = adminFilterCategory ? products.filter(x => (x.category || '').toLowerCase() === (adminFilterCategory || '').toLowerCase()) : products.slice();
+        // apply admin search filter
+        const searchTerm = (document.getElementById('admin-search') && document.getElementById('admin-search').value.trim().toLowerCase()) || '';
+        if (searchTerm) filtered = filtered.filter(x => (x.name||'').toLowerCase().includes(searchTerm) || (x.category||'').toLowerCase().includes(searchTerm));
+        // update stats
+        const total = filtered.length;
+        const totalStock = filtered.reduce((s,p) => s + (p.stock || 0), 0);
+        const totalOut = filtered.filter(p => (p.stock || 0) <= 0).length;
+        const totalEl = document.getElementById('total-products'); if (totalEl) totalEl.textContent = total;
+        const stockEl = document.getElementById('total-stock'); if (stockEl) stockEl.textContent = totalStock;
+        const outEl = document.getElementById('total-out'); if (outEl) outEl.textContent = totalOut;
+
+        filtered.slice().reverse().forEach(p => {
+          const el = document.createElement('div'); el.className = 'admin-card';
+          el.innerHTML = `
+            <div class='admin-card-left'>
+              <div class='admin-thumb'>${p.image ? `<img src='${p.image}' alt='${p.name}'>` : ''}</div>
+              <div class='admin-meta'>
+                <div class='admin-name'>${p.name}</div>
+                <div class='admin-sub'>Ksh ${p.price} · <span class='admin-cat'>${p.category || '—'}</span></div>
+              </div>
+            </div>
+            <div class='admin-card-right'>
+              <div class='admin-stock ${ (p.stock||0) <= 0 ? 'out' : '' }'>${p.stock || 0}</div>
+              <div class='admin-actions-inline'>
+                <button onclick="editProduct('${p.id}')" class='view-btn'>Edit</button>
+                <button onclick="deleteProduct('${p.id}')" class='remove'>Delete</button>
+              </div>
+            </div>
+          `;
+          list.appendChild(el);
+        });
+        // after rendering the admin list, rebuild category pills for selection (top + form)
+        if (typeof rebuildCategoryPills === 'function') {
+          rebuildCategoryPills();
+          // copy top list into the hidden form list so both locations stay in sync
+          const top = document.getElementById('p-category-list-top');
+          const formList = document.getElementById('p-category-list');
+          if (top && formList) {
+            // mirror the same innerHTML (allows both to interact via same handlers)
+            formList.innerHTML = top.innerHTML;
+          }
+        }
+      }
+
+      // expose helper functions used by UI
+      window.renderAdminList = renderAdminList;
+
+      // form submit -> add product or save edit (uses Firestore when available)
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('p-name').value.trim();
+        const price = parseFloat(document.getElementById('p-price').value) || 0;
+        const category = document.getElementById('p-category').value || '';
+        const imageText = document.getElementById('p-image').value.trim();
+        const stock = parseInt(document.getElementById('p-stock').value, 10);
+        const fileInput = document.getElementById('p-image-file');
+
+        // if firebaseDB is available, upload image and write to Firestore
+          try {
+          let imageValue = imageText || '';
+          let storagePath = null;
+          if (fileInput && fileInput.files && fileInput.files[0] && window.firebaseDB) {
+            const res = await window.firebaseDB.uploadImage(fileInput.files[0]);
+            imageValue = res.url;
+            storagePath = res.path;
+          }
+
+          const payload = { name, price, category, image: imageValue, storagePath: storagePath || null, stock: Number.isFinite(stock) ? stock : 30 };
+          const editId = form.getAttribute('data-edit-id');
+          if (window.firebaseDB) {
+            if (editId) {
+              // update existing doc
+              await window.firebaseDB.updateProduct(editId, payload);
+              showToast('Product updated');
+            } else {
+              await window.firebaseDB.addProduct(payload);
+              showToast('Product added');
+            }
+            form.reset();
+            clearEditState();
+            // re-render will be triggered by realtime listener
+            return;
+          }
+
+          // fallback to localStorage if firebaseDB not available
+          const finalize = (imageValueFallback) => {
+            const payload2 = { name, price, category, image: imageValueFallback, stock: Number.isFinite(stock) ? stock : 30 };
+            const editId2 = form.getAttribute('data-edit-id');
+            if (editId2) {
+              const id = parseInt(editId2, 10);
+              const existing = products.find(x => x.id === id);
+              if (existing) {
+                existing.name = payload2.name; existing.price = payload2.price; existing.category = payload2.category; existing.image = payload2.image; existing.stock = payload2.stock;
+                saveProductsToStorage(products);
+                if (typeof window.renderAdminList === 'function') window.renderAdminList();
+                if (container) applyFilters();
+                renderCart();
+                showToast('Product updated');
+                form.removeAttribute('data-edit-id');
+                document.getElementById('add-product').textContent = 'Add product';
+                document.getElementById('cancel-edit').style.display = 'none';
+                form.reset();
+                return;
+              }
+            }
+            addProductFromAdmin(payload2);
+            form.reset();
+            if (typeof window.renderAdminList === 'function') window.renderAdminList();
+          };
+
+          if (fileInput && fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function() { finalize(reader.result); };
+            reader.readAsDataURL(fileInput.files[0]);
+          } else {
+            finalize(imageText || '');
+          }
+        } catch (err) {
+          console.error('Error saving product', err);
+          showToast('Failed to save product');
+        }
+      });
+
+      // reset store to initial set
+      document.getElementById('reset-store').addEventListener('click', () => {
+        if (!confirm('Reset product catalog to the original default set? This will overwrite current stored products.')) return;
+        resetProductsToDefaults();
+        renderAdminList();
+      });
+
+      // cancel / clear edit state helper
+      function clearEditState() {
+        form.removeAttribute('data-edit-id');
+        document.getElementById('add-product').textContent = 'Add product';
+        document.getElementById('cancel-edit').style.display = 'none';
+        document.getElementById('image-preview').style.display = 'none';
+        document.getElementById('image-preview-img').src = '';
+        const file = document.getElementById('p-image-file'); if (file) file.value = '';
+      }
+
+      // build category pills from categories array
+      function populateCategorySelect() {
+        const select = document.getElementById('p-category');
+        if (!select) return;
+        select.innerHTML = '<option value="">Select category</option>';
+        categories.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          select.appendChild(opt);
+        });
+      }
+
+      function rebuildCategoryPills() {
+        const listEl = document.getElementById('p-category-list-top');
+        if (!listEl) return;
+        listEl.innerHTML = '';
+        // add an 'All' pill
+        const allPill = document.createElement('div');
+        allPill.className = 'cat-item';
+        allPill.textContent = 'All';
+        allPill.addEventListener('click', () => { adminFilterCategory = null; selectCategoryPill(allPill); renderAdminList(); document.getElementById('p-category').value = ''; });
+        listEl.appendChild(allPill);
+
+        categories.forEach(c => {
+          const el = document.createElement('div');
+          el.className = 'cat-item';
+          el.style.display = 'flex';
+          el.style.alignItems = 'center';
+          el.style.cursor = 'pointer';
+
+          const textSpan = document.createElement('span');
+          textSpan.textContent = c;
+          textSpan.style.flex = '1';
+          textSpan.addEventListener('click', () => {
+            selectCategoryPill(el);
+            adminFilterCategory = c;
+            renderAdminList();
+            document.getElementById('p-category').value = c;
+          });
+          el.appendChild(textSpan);
+
+          const removeBtn = document.createElement('button');
+          removeBtn.textContent = '×';
+          removeBtn.style.marginLeft = '4px';
+          removeBtn.style.fontSize = '14px';
+          removeBtn.style.border = 'none';
+          removeBtn.style.background = 'transparent';
+          removeBtn.style.color = '#666';
+          removeBtn.style.cursor = 'pointer';
+          removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeCategory(c);
+          });
+          el.appendChild(removeBtn);
+
+          listEl.appendChild(el);
+          // if there is an active adminFilterCategory, mark the pill selected
+          if (adminFilterCategory && c.toLowerCase() === adminFilterCategory.toLowerCase()) selectCategoryPill(el);
+        });
+        populateCategorySelect();
+      }
+
+      function selectCategoryPill(el) {
+        const listEl = document.getElementById('p-category-list');
+        if (!listEl) return;
+        Array.from(listEl.children).forEach(ch => {
+          ch.style.boxShadow = 'none';
+          ch.style.opacity = '1';
+        });
+        if (el) {
+          el.style.boxShadow = 'inset 0 0 0 2px rgba(255,255,255,0.08), 0 4px 10px rgba(0,0,0,0.12)';
+          el.style.opacity = '0.95';
+        }
+      }
+
+      // cancel edit
+      document.getElementById('cancel-edit').addEventListener('click', () => {
+        clearEditState();
+        form.reset();
+      });
+
+      // preview image when typing URL
+      document.getElementById('p-image').addEventListener('input', (e) => {
+        const v = e.target.value.trim();
+        const preview = document.getElementById('image-preview');
+        const img = document.getElementById('image-preview-img');
+        if (v) { img.src = v; preview.style.display = 'block'; } else { img.src = ''; preview.style.display = 'none'; }
+      });
+
+      // preview file upload
+      document.getElementById('p-image-file').addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        const preview = document.getElementById('image-preview');
+        const img = document.getElementById('image-preview-img');
+        if (!file) { img.src = ''; preview.style.display = 'none'; return; }
+        const reader = new FileReader();
+        reader.onload = () => { img.src = reader.result; preview.style.display = 'block'; };
+        reader.readAsDataURL(file);
+      });
+
+      // prefill edit if requested (admin.html?edit=<id>) or pre-filter by category (admin.html?category=Men)
+      const qs = new URLSearchParams(location.search);
+      const editId = qs.get('edit');
+      const catParam = qs.get('category');
+      if (catParam) {
+        adminFilterCategory = catParam;
+        // set input and select pill after rendering
+        document.getElementById('p-category').value = catParam;
+      }
+      if (editId) {
+        // wait a short moment until render functions exist
+        setTimeout(() => editProduct(editId), 60);
+      }
+
+      // Admin contact phone wiring (save/delete/open/call)
+      try {
+        const phoneInput = document.getElementById('admin-phone-input');
+        if (phoneInput) {
+          try { phoneInput.value = getPhoneDisplay(); } catch (e) { phoneInput.value = '0768770090'; }
+          const saveBtn = document.getElementById('save-phone');
+          const delBtn = document.getElementById('delete-phone');
+          const openBtn = document.getElementById('open-whatsapp');
+          const callLink = document.getElementById('call-phone');
+          if (saveBtn) saveBtn.addEventListener('click', () => { setStoredPhoneRaw(phoneInput.value.trim()); applyContactPhoneToDOM(); showAdminPopup('Contact changed to ' + getPhoneDisplay()); if (callLink) { callLink.href = 'tel:+' + getPhoneIntlNoPlus(); callLink.textContent = 'Call ' + getPhoneDisplay(); } });
+          if (delBtn) delBtn.addEventListener('click', () => { if (!confirm('Delete saved contact number?')) return; setStoredPhoneRaw(null); phoneInput.value = ''; applyContactPhoneToDOM(); showAdminPopup('Contact removed'); if (callLink) { callLink.href = '#'; callLink.textContent = 'Call'; } });
+          if (openBtn) openBtn.addEventListener('click', () => { contactWhatsAppGeneral(); });
+          if (callLink) { callLink.href = 'tel:+' + getPhoneIntlNoPlus(); callLink.textContent = 'Call ' + getPhoneDisplay(); }
+        }
+      } catch (e) { /* ignore */ }
+
+      // --- Hero editor wiring: load current hero, preview, upload, save/reset ---
+      try {
+        const hero = loadHeroFromStorage();
+        const hTitle = document.getElementById('hero-title-input');
+        const hSub = document.getElementById('hero-sub-input');
+        const hImg = document.getElementById('hero-image-input');
+        const hFile = document.getElementById('hero-image-file');
+        const hPreview = document.getElementById('hero-preview');
+        const hPreviewImg = document.getElementById('hero-preview-img');
+        const saveBtn = document.getElementById('save-hero');
+        const resetBtn = document.getElementById('reset-hero');
+
+        if (hTitle) hTitle.value = hero.title ? hero.title.replace(/\n/g, ' ') : '';
+        if (hSub) hSub.value = hero.subtitle || '';
+        if (hImg) hImg.value = hero.image || '';
+        if (hero.image && hPreviewImg) { hPreviewImg.src = hero.image; hPreview.style.display = 'block'; }
+
+        // preview URL input
+        if (hImg) hImg.addEventListener('input', (e) => {
+          const v = e.target.value.trim();
+          if (v) { hPreviewImg.src = v; hPreview.style.display = 'block'; } else { hPreviewImg.src = ''; hPreview.style.display = 'none'; }
+        });
+
+        // preview file upload
+        if (hFile) hFile.addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) { hPreviewImg.src = ''; hPreview.style.display = 'none'; return; }
+          const reader = new FileReader();
+          reader.onload = () => { hPreviewImg.src = reader.result; hPreview.style.display = 'block'; };
+          reader.readAsDataURL(file);
+        });
+
+        // save hero
+        if (saveBtn) saveBtn.addEventListener('click', () => {
+          let imageVal = (hImg && hImg.value.trim()) || '';
+          // if file chosen, read it then save
+          if (hFile && hFile.files && hFile.files[0]) {
+            const reader = new FileReader();
+            reader.onload = () => {
+              imageVal = reader.result;
+              const newHero = { title: (hTitle && hTitle.value) || '', subtitle: (hSub && hSub.value) || '', image: imageVal };
+              saveHeroToStorage(newHero);
+              applyHeroToPage();
+              showToast('Homepage hero saved');
+            };
+            reader.readAsDataURL(hFile.files[0]);
+            return;
+          }
+          const newHero = { title: (hTitle && hTitle.value) || '', subtitle: (hSub && hSub.value) || '', image: imageVal };
+          saveHeroToStorage(newHero);
+          applyHeroToPage();
+          showToast('Homepage hero saved');
+        });
+
+        // reset hero to defaults
+        if (resetBtn) resetBtn.addEventListener('click', () => {
+          if (!confirm('Reset homepage hero to defaults?')) return;
+          saveHeroToStorage(DEFAULT_HERO);
+          applyHeroToPage();
+          if (hTitle) hTitle.value = DEFAULT_HERO.title.replace(/\n/g,' ');
+          if (hSub) hSub.value = DEFAULT_HERO.subtitle;
+          if (hImg) hImg.value = DEFAULT_HERO.image;
+          if (hPreviewImg) { hPreviewImg.src = DEFAULT_HERO.image; hPreview.style.display = 'block'; }
+          showToast('Homepage hero reset');
+        });
+      } catch (e) { /* ignore if functions/elements missing */ }
+
+      // wire admin search
+      const adminSearch = document.getElementById('admin-search');
+      adminSearch.addEventListener('input', () => renderAdminList());
+
+      // wire add category
+      document.getElementById('add-category-btn').addEventListener('click', () => {
+        const input = document.getElementById('new-category-input');
+        const newCat = input.value.trim();
+        if (newCat) {
+          addCategory(newCat);
+          input.value = '';
+          showToast('Category added');
+        }
+      });
+
+      // first render - prefer Firestore when available
+      (async function initData() {
+        try {
+          if (window.firebaseDB) {
+            const initial = await window.firebaseDB.getProductsOnce();
+            products = initial.map(p => Object.assign({}, p, { stock: typeof p.stock === 'undefined' ? 30 : p.stock }));
+            renderAdminList();
+            // realtime updates
+            window.firebaseDB.listProductsRealtime((items) => {
+              products = items.map(p => Object.assign({}, p, { stock: typeof p.stock === 'undefined' ? 30 : p.stock }));
+              renderAdminList();
+              if (container) applyFilters();
+              renderCart();
+            });
+            // load categories from Firestore too
+            try {
+              const cats = await window.firebaseDB.listCategories();
+              if (cats && cats.length) {
+                categories = cats.map(c => c.name || c.id).filter(Boolean);
+                saveCategoriesToStorage(categories);
+                rebuildCategoryPills();
+              }
+            } catch (e) { /* ignore category load errors */ }
+            return;
+          }
+        } catch (e) { console.error('Firestore init error', e); }
+        // fallback to local storage/defaults
+        renderAdminList();
+      })();
+    });
+  </script>
+</body>
+</html>

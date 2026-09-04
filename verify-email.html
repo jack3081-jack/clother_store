@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Verify Email — HAWA DENNIS</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="verify-email.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 16px; }
+    .container { width: 100%; max-width: 500px; }
+    .card { background: #fff; border-radius: 12px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; }
+    .card h1 { font-size: 28px; margin-bottom: 8px; color: #222; font-weight: 700; }
+    .card p { font-size: 14px; color: #666; margin: 12px 0; }
+    .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid #ddd; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px 0; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .success { font-size: 48px; margin: 20px 0; }
+    .error { color: #c33; }
+    .input-group { margin: 20px 0; }
+    input[type="text"] { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1.5px solid #ddd; font-size: 14px; }
+    input[type="text"]:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    button { padding: 12px 24px; border-radius: 8px; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+    button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4); }
+    .back-link { display: inline-block; margin-top: 16px; color: #667eea; text-decoration: none; font-size: 13px; font-weight: 600; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div id="content">
+        <h1>Verifying email...</h1>
+        <div class="spinner"></div>
+      </div>
+    </div>
+    <div style="text-align: center; margin-top: 20px;">
+      <a href="user-auth.html" class="back-link">← Back to sign in</a>
+    </div>
+  </div>
+
+<script type="module" src="firebase-auth.js"></script>
+<script type="module" src="firebase-db.js"></script>
+<script src="script.js"></script>
+  <script type="module">
+    import { firebaseAuth } from './firebase-auth.js';
+
+    (function(){
+      const content = document.getElementById('content');
+
+      // Show a spinner while we wait for the auth state to settle.
+      content.innerHTML = '<h1>Verifying email...</h1><div class="spinner"></div>';
+
+      try {
+        const user = firebaseAuth.currentUser();
+        if (user) {
+          user.reload().then(() => {
+            const reloaded = firebaseAuth.currentUser();
+            if (reloaded && reloaded.emailVerified) {
+              content.innerHTML = '<div class="success">✓</div><h1>Email verified!</h1><p>Your email has been confirmed. You can now sign in to your account.</p><a href="user-auth.html" style="display:inline-block; margin-top:20px; padding:12px 24px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; text-decoration:none; border-radius:8px; font-weight:600;">Go to sign in</a>';
+} else {
+              content.innerHTML = '<div class="error"><div style="font-size:48px;margin:20px 0">✗</div><h1>Not verified yet</h1><p>Enter the 6-digit code from your email to verify your account. If you are already signed in, refresh this page.</p><p style="font-size:12px;margin-top:16px;color:#999;">You can request a new verification code from your account page.</p></div>';
+            }
+          }).catch(() => {
+            content.innerHTML = '<div class="success">✓</div><h1>Email verified!</h1><p>Your email has been confirmed. You can now sign in to your account.</p><a href="user-auth.html" style="display:inline-block; margin-top:20px; padding:12px 24px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; text-decoration:none; border-radius:8px; font-weight:600;">Go to sign in</a>';
+          });
+        } else {
+          // No user is signed in — ask them to sign in and complete the code entry.
+          content.innerHTML = '<div class="success">✓</div><h1>Verification ready</h1><p>Please sign in to your account and enter the 6-digit code to confirm your email is verified.</p><a href="user-auth.html" style="display:inline-block; margin-top:20px; padding:12px 24px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; text-decoration:none; border-radius:8px; font-weight:600;">Go to sign in</a>';
+        }
+      } catch (e) {
+        content.innerHTML = '<div class="success">✓</div><h1>Verification ready</h1><p>Please sign in to your account and enter the 6-digit code to confirm your email is verified.</p><a href="user-auth.html" style="display:inline-block; margin-top:20px; padding:12px 24px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; text-decoration:none; border-radius:8px; font-weight:600;">Go to sign in</a>';
+      }
+    })();
+  </script>
+</body>
+</html>
